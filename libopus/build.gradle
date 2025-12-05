@@ -25,6 +25,7 @@ android {
     externalNativeBuild {
         cmake {
             path "src/main/cpp/libopus/CMakeLists.txt"
+            // TODO 改成你的 CMake 版本
             version "3.22.1"
         }
     }
@@ -45,6 +46,7 @@ android {
         abortOnError false
     }
 
+    // TODO 改成你的 NDK 版本
     ndkVersion '29.0.14033849'
 }
 
