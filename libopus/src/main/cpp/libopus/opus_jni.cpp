@@ -29,17 +29,19 @@ Java_com_book_studio_opus_OpusBridge_createEncoder(JNIEnv *env, jobject thiz, ji
         return 0;
     }
     if (pOpusEnc) {
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR(0));//0:CBR, 1:VBR
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR_CONSTRAINT(true));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_BITRATE(32000));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_EXPERT_FRAME_DURATION(OPUS_FRAMESIZE_20_MS));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_COMPLEXITY(complexity));//8    0~10
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_APPLICATION(OPUS_APPLICATION_VOIP));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_LSB_DEPTH(16));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_DTX(0));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_INBAND_FEC(0));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_PACKET_LOSS_PERC(0));
+        int bit_depth = 16;
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));                   // 信号类型，VOICE语音，MUSIC音乐
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_BITRATE(sampleRateInHz));                     // 控制最大比特率，AUTO在不说话时减少带宽。
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_BANDWIDTH(OPUS_BANDWIDTH_WIDEBAND));          // 自动带宽，根据信号自动调整带宽
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR(1));                                      // 0固定码率，1动态码率
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR_CONSTRAINT(0));                           // 0不受约束，1受约束（默认）
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_COMPLEXITY(complexity));                      // 编码复杂度0~10
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_INBAND_FEC(0));                               // 算法修复丢失的数据包，0关，1开
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_FORCE_CHANNELS(channelConfig));               // 声道数
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_DTX(0));                                      // 不连续传输，0关，1开
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_LSB_DEPTH(bit_depth));                        // 位深
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_EXPERT_FRAME_DURATION(OPUS_FRAMESIZE_20_MS)); // 帧持续时间
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_APPLICATION(OPUS_APPLICATION_VOIP));          // 同编码器创建参数
     } else {
         LOGE("create Opus encoder error; error=%s", opus_strerror(error));
     }
