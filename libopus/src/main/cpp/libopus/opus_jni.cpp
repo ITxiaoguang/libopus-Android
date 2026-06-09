@@ -29,16 +29,28 @@ Java_com_book_studio_opus_OpusBridge_createEncoder(JNIEnv *env, jobject thiz, ji
         return 0;
     }
     if (pOpusEnc) {
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR(0));//0:CBR, 1:VBR
+        // 0固定码率，1动态码率
+        // opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR(0));//0:CBR, 1:VBR
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR(1));//0:CBR, 1:VBR
+        // 受限VBR，减少低能量语音帧码率波动
         opus_encoder_ctl(pOpusEnc, OPUS_SET_VBR_CONSTRAINT(true));
-        opus_encoder_ctl(pOpusEnc, OPUS_SET_BITRATE(32000));
+        // ASR优先保真
+        // opus_encoder_ctl(pOpusEnc, OPUS_SET_BITRATE(32000));
+        opus_encoder_ctl(pOpusEnc, OPUS_SET_BITRATE(48000));
+        // 16K/16bit/mono下，20ms = 640 bytes
         opus_encoder_ctl(pOpusEnc, OPUS_SET_EXPERT_FRAME_DURATION(OPUS_FRAMESIZE_20_MS));
+        // 编码复杂度0~10
         opus_encoder_ctl(pOpusEnc, OPUS_SET_COMPLEXITY(complexity));//8    0~10
+        // 信号类型，VOICE语音，MUSIC音乐
         opus_encoder_ctl(pOpusEnc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
         opus_encoder_ctl(pOpusEnc, OPUS_SET_APPLICATION(OPUS_APPLICATION_VOIP));
+        // 位深
         opus_encoder_ctl(pOpusEnc, OPUS_SET_LSB_DEPTH(16));
+        // 不连续传输，0关，1开
         opus_encoder_ctl(pOpusEnc, OPUS_SET_DTX(0));
+        // 算法修复丢失的数据包，0关，1开
         opus_encoder_ctl(pOpusEnc, OPUS_SET_INBAND_FEC(0));
+        // 预期0%丢包率
         opus_encoder_ctl(pOpusEnc, OPUS_SET_PACKET_LOSS_PERC(0));
     } else {
         LOGE("create Opus encoder error; error=%s", opus_strerror(error));
